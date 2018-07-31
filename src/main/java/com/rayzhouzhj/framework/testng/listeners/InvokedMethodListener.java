@@ -45,7 +45,7 @@ public final class InvokedMethodListener implements IInvokedMethodListener
 
 	/**
 	 * Before each method invocation
-	 * Initialize Web Driver and Report Manager
+	 * Initialize Report Manager
 	 */
 	@Override
 	public void beforeInvocation(IInvokedMethod method, ITestResult testResult) 
@@ -66,7 +66,7 @@ public final class InvokedMethodListener implements IInvokedMethodListener
 
 	/**
 	 * After each method invocation
-	 * Update test result to report manager and stop Web Driver
+	 * Update test result to report manager
 	 */
 	@Override
 	public void afterInvocation(IInvokedMethod method, ITestResult testResult) 

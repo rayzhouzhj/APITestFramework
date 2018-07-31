@@ -24,7 +24,7 @@ public class APITest
 				.when()
 				.get("https://api.github.com/users/rayzhouzhj");
 		
-		logger.logJson(resp);
+		logger.logJson(resp, "json response");
 		
 		resp.then()
 		.statusCode(200)
