@@ -1,4 +1,4 @@
-package com.rayzhouzhj.test;
+package com.rayzhouzhj.test.runner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +13,12 @@ public class APIRunner
     @Test
     public static void testApp() throws Exception 
     {
-        TestExecutor parallelThread = new TestExecutor();
-        List<String> tests = new ArrayList<>();
-//        tests.add("APITest");
-        boolean hasFailures = parallelThread.runner("com.rayzhouzhj.test", tests);
+    	List<String> testPackages = new ArrayList<>();
+    	testPackages.add("com.rayzhouzhj.test.demo1");
+    	testPackages.add("com.rayzhouzhj.test");
+        TestExecutor executor = new TestExecutor(testPackages);
+        
+        boolean hasFailures = executor.execute();
         
         Assert.assertFalse(hasFailures, "Testcases execution failed.");
     }
