@@ -4,7 +4,7 @@
 
 	<groupId>com.github.rayzhouzhj</groupId>
 	<artifactId>APITestFramework</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>APITestFramework</name>
@@ -44,6 +44,12 @@
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
 			<version>3.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.skyscreamer</groupId>
+			<artifactId>jsonassert</artifactId>
+			<version>1.5.0</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
