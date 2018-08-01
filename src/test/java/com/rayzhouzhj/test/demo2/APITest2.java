@@ -9,13 +9,13 @@ import io.restassured.response.Response;
 
 import static org.hamcrest.Matchers.*;
 
-public class APITest 
+public class APITest2 
 {
 
 	TestLogger logger = new TestLogger();
 	
 	@Test(groups={"test"})
-	public void testAPI1() throws InterruptedException
+	public void testAPI3() throws InterruptedException
 	{
 		
 		Response resp = RestAssured.given().
@@ -32,7 +32,7 @@ public class APITest
 	}
 	
 	@Test(groups={"test", "groups_to_exclude"})
-	public void testAPI2() throws InterruptedException
+	public void testAPI4() throws InterruptedException
 	{
 		
 		Response resp = RestAssured.given().

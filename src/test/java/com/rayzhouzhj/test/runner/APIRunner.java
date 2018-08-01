@@ -11,7 +11,7 @@ import com.rayzhouzhj.framework.executor.TestExecutor;
 public class APIRunner 
 {
     @Test
-    public static void testApp() throws Exception 
+    public static void testAPI() throws Exception 
     {
     	List<String> testPackages = new ArrayList<>();
     	testPackages.add("com.rayzhouzhj.test.demo1");
