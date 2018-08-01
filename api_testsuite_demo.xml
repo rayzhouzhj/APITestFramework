@@ -13,16 +13,21 @@
       </run>
     </groups>
     <classes>
-      <class name="com.rayzhouzhj.test.demo1.APITest">
+      <class name="com.rayzhouzhj.test.demo2.APITest2">
+        <methods>
+          <include name="testAPI3"/>
+        </methods>
+      </class> <!-- com.rayzhouzhj.test.demo2.APITest2 -->
+      <class name="com.rayzhouzhj.test.demo1.DataProviderTest">
+        <methods>
+          <include name="testDataProvider"/>
+        </methods>
+      </class> <!-- com.rayzhouzhj.test.demo1.DataProviderTest -->
+      <class name="com.rayzhouzhj.test.demo1.APITest1">
         <methods>
           <include name="testAPI2"/>
         </methods>
-      </class> <!-- com.rayzhouzhj.test.demo1.APITest -->
-      <class name="com.rayzhouzhj.test.demo2.APITest">
-        <methods>
-          <include name="testAPI1"/>
-        </methods>
-      </class> <!-- com.rayzhouzhj.test.demo2.APITest -->
+      </class> <!-- com.rayzhouzhj.test.demo1.APITest1 -->
     </classes>
   </test> <!-- API Test -->
 </suite> <!-- Test Suite -->
