@@ -13,7 +13,7 @@ import io.restassured.path.json.JsonPath;
 
 public class DataProviderTest {
 
-	@Test(groups={"test"}, dataProvider="provideData")
+	@Test(groups={"test", "DataProvider"}, dataProvider="provideData")
 	@Categories(values={"DataProvider", "Demo"})
 	public void testDataProvider(String user, String email) throws InterruptedException
 	{
@@ -21,7 +21,7 @@ public class DataProviderTest {
 		System.out.println("User: " + user + " email: " + email);
 	}
 	
-	@DataProvider
+	@DataProvider(parallel=true)
 	public Object[][] provideData() throws Exception
 	{
 		JsonPath data = JsonPath.from(new File("./data/testdata.json"));

@@ -57,13 +57,13 @@ public class TestExecutor
 		{
 			Collections.addAll(groupsInclude, context.getProperty("INCLUDE_GROUPS").split("\\s*,\\s*"));
 		} 
-		
+
 		if (context.getProperty("EXCLUDE_GROUPS") != null) 
 		{
 			Collections.addAll(groupsExclude, context.getProperty("EXCLUDE_GROUPS").split("\\s*,\\s*"));
 		} 
 	}
-	
+
 	/**
 	 * Execute test
 	 * 
@@ -169,7 +169,7 @@ public class TestExecutor
 		{
 			XmlClass clazz = new XmlClass();
 			clazz.setName(className);
-			
+
 			// Add include methods
 			List<XmlInclude> includeMethods = new ArrayList<>();
 			for(Method method : classMethodMap.get(className))
@@ -177,11 +177,11 @@ public class TestExecutor
 				XmlInclude includeMethod = new XmlInclude(method.getName());
 				includeMethods.add(includeMethod);
 			}
-			
+
 			clazz.setIncludedMethods(includeMethods);
 			xmlClasses.add(clazz);
 		}
-		
+
 		test.setXmlClasses(xmlClasses);
 
 		return suite;
@@ -217,13 +217,13 @@ public class TestExecutor
 		methods.stream().forEach(method -> 
 		{
 			String className = method.getDeclaringClass().getPackage().getName() + "." + method.getDeclaringClass().getSimpleName();
-			
+
 			// Skip runner class
 			if(runnerClass.equals(className))
 			{
 				return;
 			}
-			
+
 			// Get method list from specific test class
 			List<Method> methodsList = testsMap.get(className);
 
@@ -233,7 +233,7 @@ public class TestExecutor
 				methodsList = new ArrayList<>();
 				testsMap.put(className, methodsList);
 			}
-			
+
 			// If current method is duplicated
 			if(methodsList.contains(method))
 			{
@@ -244,25 +244,44 @@ public class TestExecutor
 			// Added this filter because TestNG sometimes does not filter the exclude correctly
 			if (method.isAnnotationPresent(Test.class))
 			{
+				boolean isIncluded = false;
 				Test test = method.getAnnotation(Test.class);
 				String[] groups = test.groups();
 				for(String group : groups)
 				{
 					if(this.groupsExclude.contains(group))
 					{
-						// If not test method is included for the test class
+						// If no test method is included for the test class
 						if(methodsList.isEmpty())
 						{
 							// Remove test class from test map
 							testsMap.remove(className);
 						}
-						
+
 						return;
 					}
+
+					// If include groups are not specified or current test group is in the include groups
+					if(this.groupsInclude.size() == 0 || this.groupsInclude.contains(group))
+					{
+						isIncluded = true;
+					}
 				}
-				
+
 				// Add method to list
-				methodsList.add(method);
+				if(isIncluded)
+				{
+					methodsList.add(method);
+				}
+				else
+				{
+					// If no test method is included for the test class
+					if(methodsList.isEmpty())
+					{
+						// Remove test class from test map
+						testsMap.remove(className);
+					}
+				}
 			}
 		});
 
