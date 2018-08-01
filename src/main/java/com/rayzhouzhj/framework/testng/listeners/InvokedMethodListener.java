@@ -7,7 +7,7 @@ import org.testng.IInvokedMethodListener;
 import org.testng.ITestResult;
 import org.testng.annotations.Test;
 
-import com.rayzhouzhj.framework.annotations.Description;
+import com.rayzhouzhj.framework.annotations.ClassDescription;
 import com.rayzhouzhj.framework.report.ExtentManager;
 import com.rayzhouzhj.framework.report.ReportManager;
 
@@ -27,9 +27,9 @@ public final class InvokedMethodListener implements IInvokedMethodListener
 		try 
 		{
 			String testDescription = "";
-			if (testResult.getTestClass().getClass().getAnnotation(Description.class) != null) 
+			if (testResult.getTestClass().getClass().isAnnotationPresent(ClassDescription.class)) 
 			{
-				testDescription = getClass().getAnnotation(Description.class).value();
+				testDescription = getClass().getAnnotation(ClassDescription.class).value();
 			}
 
 			// Create test
