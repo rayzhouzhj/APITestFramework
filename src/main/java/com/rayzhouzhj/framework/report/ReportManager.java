@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 import com.rayzhouzhj.framework.annotations.Author;
+import com.rayzhouzhj.framework.annotations.Categories;
 
 /**
  * ReportManager - Handles all Reporting activities e.g communication with ExtentManager, etc
@@ -96,49 +97,71 @@ public class ReportManager
 		this.testResult.set(testResult);
 	}
 
-	public ExtentTest createParentNodeExtent(String className, String classDescription) throws Exception 
+	public void addTest(String className, String classDescription, IInvokedMethod invokedMethod) throws Exception 
 	{
 		ExtentTest parent = ExtentTestManager.createTest(className, classDescription);
 		parentTestClass.set(parent);
 
-		return parent;
+		addTestMethod(invokedMethod);
 	}
 
-	public void setAuthorName(IInvokedMethod invokedMethod) throws Exception 
+	private void addTestMethod(IInvokedMethod invokedMethod) throws Exception 
 	{
-		String authorName;
-		String dataProvider = null;
-		ArrayList<String> listeners = new ArrayList<>();
-		Method method = invokedMethod.getTestMethod().getConstructorOrMethod().getMethod();
-		String description = method.getAnnotation(Test.class).description();
-		Object dataParameter = invokedMethod.getTestResult().getParameters();
-
-		if (((Object[]) dataParameter).length > 0)
+		String dataProviderVars = null;
+		Method testMethod = invokedMethod.getTestMethod().getConstructorOrMethod().getMethod();
+		String testDescription = testMethod.getAnnotation(Test.class).description();
+		String testName = "";
+		
+		// Add description to test name
+		if (testDescription.isEmpty())
 		{
-			dataProvider = (String) ((Object[]) dataParameter)[0];
-		}
-
-
-		ExtentTestDescription methodDescription = new ExtentTestDescription(invokedMethod, description);
-		boolean authorNamePresent = methodDescription.isAuthorNamePresent();
-		String descriptionMethodName = methodDescription.getDescriptionMethodName();
-		String category = invokedMethod.getTestMethod().getXmlTest().getParameter("browser");
-
-		String testName = dataProvider == null ? descriptionMethodName : descriptionMethodName + "[" + dataProvider + "]";
-		if (authorNamePresent)
-		{
-			authorName = method.getAnnotation(Author.class).name();
-			Collections.addAll(listeners, authorName.split("\\s*,\\s*"));
-			ExtentTest child = parentTestClass.get().createNode(testName, category).assignAuthor(String.valueOf(listeners));
-			child.assignCategory(category);
-			currentTestMethod.set(child);
+			testName = invokedMethod.getTestMethod().getMethodName();
 		} 
 		else 
 		{
-			ExtentTest child = parentTestClass.get().createNode(testName, category);
-			child.assignCategory(category);
-			currentTestMethod.set(child);
+			testName = invokedMethod.getTestMethod().getMethodName() + "[" + testDescription + "]";
 		}
+		
+		
+		// Add parameters to test name
+		Object[] testVars = (Object[]) invokedMethod.getTestResult().getParameters();
+		if (testVars.length > 0)
+		{
+			dataProviderVars = "";
+			for(int i = 0; i < testVars.length; i++)
+			{
+				dataProviderVars = dataProviderVars.isEmpty()?  "" + testVars[i] : (dataProviderVars + " " + testVars[i]);
+			}
+			
+			testName =  testName + "[" + dataProviderVars + "]";
+		}
+
+		
+		ExtentTest child = null;
+		if (testMethod.isAnnotationPresent(Author.class))
+		{
+			String authorName = testMethod.getAnnotation(Author.class).name();
+			ArrayList<String> authors = new ArrayList<>();
+			Collections.addAll(authors, authorName.split("\\s*,\\s*"));
+			child = parentTestClass.get().createNode(testName, testDescription).assignAuthor(String.valueOf(authors));
+		} 
+		else 
+		{
+			child = parentTestClass.get().createNode(testName, testDescription);
+		}
+
+		// Assign Categories
+		if(testMethod.isAnnotationPresent(Categories.class))
+		{
+			String[] categories = testMethod.getAnnotation(Categories.class).values();
+			if(categories.length > 0)
+			{
+				child.assignCategory(categories);
+			}
+
+		}
+
+		currentTestMethod.set(child);
 	}
 
 	public void logInfo(String message)

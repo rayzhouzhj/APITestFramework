@@ -32,10 +32,9 @@ public final class InvokedMethodListener implements IInvokedMethodListener
 				testDescription = getClass().getAnnotation(Description.class).value();
 			}
 
-			// Create test node at test class level
-			ReportManager.getInstance().createParentNodeExtent(className, testDescription);
+			// Create test
+			ReportManager.getInstance().addTest(className, testDescription, method);
 			ReportManager.getInstance().setTestResult(testResult);
-			ReportManager.getInstance().setAuthorName(method);
 		}
 		catch (Exception e) 
 		{
