@@ -20,8 +20,17 @@ public class TestLogger
 
 	public void logJson(Response resp, String fileName)
 	{
-		StackTraceElement[] stElements = Thread.currentThread().getStackTrace();	    
-		String filePath = RunTimeContext.getInstance().getLogPath("json", stElements[2].getClassName(), stElements[2].getMethodName());
+		StackTraceElement[] stElements = Thread.currentThread().getStackTrace();	
+		int classIndex = 0;
+		for(int i = 0; i < stElements.length; i++)
+		{
+			if(stElements[i].getClassName().equals("sun.reflect.NativeMethodAccessorImpl"))
+			{
+				classIndex = i - 1;
+				break;
+			}
+		}
+		String filePath = RunTimeContext.getInstance().getLogPath("json", stElements[classIndex].getClassName(), stElements[classIndex].getMethodName());
 		if(fileName == null) 
 		{
 			filePath = filePath + File.separator + RunTimeContext.currentDateAndTime() + ".json";
