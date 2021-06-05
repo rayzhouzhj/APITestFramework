@@ -32,284 +32,248 @@ import com.rayzhouzhj.framework.context.RunTimeContext;
 import com.rayzhouzhj.framework.utils.Figlet;
 
 
-public class TestExecutor 
-{
-	private final RunTimeContext context;
-	private List<String> packages;
-	private List<String> groupsInclude = new ArrayList<>();
-	private List<String> groupsExclude = new ArrayList<>();
+public class TestExecutor {
+    private final RunTimeContext context;
+    private List<String> packages;
+    private List<String> groupsInclude = new ArrayList<>();
+    private List<String> groupsExclude = new ArrayList<>();
 
-	/**
-	 * Constructor with package list
-	 * @param packages TestCases under the package and sub-packages will be lookup and executed
-	 * @throws IOException
-	 */
-	public TestExecutor(List<String> packages) throws IOException
-	{
-		this.packages = packages;
-		context = RunTimeContext.getInstance();
-		initGroups();
-	}
+    /**
+     * Constructor with package list
+     *
+     * @param packages TestCases under the package and sub-packages will be lookup and executed
+     * @throws IOException
+     */
+    public TestExecutor(List<String> packages) throws IOException {
+        this.packages = packages;
+        context = RunTimeContext.getInstance();
+        initGroups();
+    }
 
-	private void initGroups() 
-	{
-		if (context.getProperty("INCLUDE_GROUPS") != null) 
-		{
-			Collections.addAll(groupsInclude, context.getProperty("INCLUDE_GROUPS").split("\\s*,\\s*"));
-		} 
+    private void initGroups() {
+        if (context.getProperty("INCLUDE_GROUPS") != null) {
+            Collections.addAll(groupsInclude, context.getProperty("INCLUDE_GROUPS").split("\\s*,\\s*"));
+        }
 
-		if (context.getProperty("EXCLUDE_GROUPS") != null) 
-		{
-			Collections.addAll(groupsExclude, context.getProperty("EXCLUDE_GROUPS").split("\\s*,\\s*"));
-		} 
-	}
+        if (context.getProperty("EXCLUDE_GROUPS") != null) {
+            Collections.addAll(groupsExclude, context.getProperty("EXCLUDE_GROUPS").split("\\s*,\\s*"));
+        }
+    }
 
-	/**
-	 * Execute test
-	 * 
-	 * @return execution status: true for pass, false for failed
-	 * @throws Exception
-	 */
-	public boolean execute() throws Exception 
-	{
-		URL testClassUrl = null;
-		List<URL> testClassUrls = new ArrayList<>();
-		String testClassPackagePath ="file:" + System.getProperty("user.dir") + File.separator + "target" + File.separator + "test-classes" + File.separator;
+    /**
+     * Execute test
+     *
+     * @return execution status: true for pass, false for failed
+     * @throws Exception
+     */
+    public boolean execute() throws Exception {
+        URL testClassUrl = null;
+        List<URL> testClassUrls = new ArrayList<>();
+        String testClassPackagePath = "file:" + System.getProperty("user.dir") + File.separator + "target" + File.separator + "test-classes" + File.separator;
 
-		// Add URL for each test package
-		for (int i = 0; i < packages.size(); i++) 
-		{
-			testClassUrl = new URL(testClassPackagePath + packages.get(i).replaceAll("\\.", "/"));
-			testClassUrls.add(testClassUrl);
-		}
+        // Add URL for each test package
+        for (int i = 0; i < packages.size(); i++) {
+            testClassUrl = new URL(testClassPackagePath + packages.get(i).replaceAll("\\.", "/"));
+            testClassUrls.add(testClassUrl);
+        }
 
-		// Find test class by annotation: org.testng.annotations.Test.class
-		Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(testClassUrls).setScanners(new MethodAnnotationsScanner()));
-		Set<Method> resources = reflections.getMethodsAnnotatedWith(org.testng.annotations.Test.class);
+        // Find test class by annotation: org.testng.annotations.Test.class
+        Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(testClassUrls).setScanners(new MethodAnnotationsScanner()));
+        Set<Method> resources = reflections.getMethodsAnnotatedWith(org.testng.annotations.Test.class);
 
-		Map<String, List<Method>> classMethodMap = createTestsMap(resources);
+        Map<String, List<Method>> classMethodMap = createTestsMap(resources);
 
-		ExecutorService executor = Executors.newCachedThreadPool();
-		List<FutureTask<Boolean>> list = new ArrayList<>();
+        ExecutorService executor = Executors.newCachedThreadPool();
+        List<FutureTask<Boolean>> list = new ArrayList<>();
 
-		XmlSuite suite = constructXmlSuite(classMethodMap);
-		String suiteFile = writeTestNGFile(suite, "api_testsuite");
+        XmlSuite suite = constructXmlSuite(classMethodMap);
+        String suiteFile = writeTestNGFile(suite, "api_testsuite");
 
-		FutureTask<Boolean> futureTask = new FutureTask<>(new TestExecutorService(suiteFile));
-		list.add(futureTask);
+        FutureTask<Boolean> futureTask = new FutureTask<>(new TestExecutorService(suiteFile));
+        list.add(futureTask);
 
-		executor.submit(futureTask);
+        executor.submit(futureTask);
 
-		// Wait for the test completion
-		while(true)
-		{
-			boolean isDone = true;
-			for(FutureTask<Boolean> task : list)
-			{
-				isDone = isDone && task.isDone();
-			}
+        // Wait for the test completion
+        while (true) {
+            boolean isDone = true;
+            for (FutureTask<Boolean> task : list) {
+                isDone = isDone && task.isDone();
+            }
 
-			if(isDone)
-			{
-				// Shutdown executor service
-				executor.shutdown();
-				break;
-			}
-			else
-			{
-				TimeUnit.SECONDS.sleep(1);
-			}
-		}
+            if (isDone) {
+                // Shutdown executor service
+                executor.shutdown();
+                break;
+            } else {
+                TimeUnit.SECONDS.sleep(1);
+            }
+        }
 
-		boolean	hasFailure = false;
-		//  Get the result
-		for(FutureTask<Boolean> result : list)
-		{
-			hasFailure = hasFailure || result.get();
-		}
+        boolean hasFailure = false;
+        //  Get the result
+        for (FutureTask<Boolean> result : list) {
+            hasFailure = hasFailure || result.get();
+        }
 
 
+        Figlet.print("Test Completed");
 
-		Figlet.print("Test Completed");
+        return hasFailure;
+    }
 
-		return hasFailure;
-	}
+    private XmlSuite constructXmlSuite(Map<String, List<Method>> classMethodMap) {
+        // Initialize XML Suite
+        XmlSuite suite = new XmlSuite();
+        suite.setName("Test Suite");
+        suite.setPreserveOrder(true);
 
-	private XmlSuite constructXmlSuite(Map<String, List<Method>> classMethodMap) 
-	{
-		// Initialize XML Suite
-		XmlSuite suite = new XmlSuite();
-		suite.setName("Test Suite");
-		suite.setPreserveOrder(true);
+        /*
+         *  Set parallel mode to METHODS level
+         *  Each method will be taken care of by 1 thread
+         */
+        suite.setThreadCount(Integer.parseInt(context.getProperty("THREAD_COUNT")));
+        suite.setDataProviderThreadCount(Integer.parseInt(context.getProperty("DATAPROVIDER_THREAD_COUNT")));
+        suite.setParallel(ParallelMode.METHODS);
+        suite.setVerbose(2);
 
-		/*
-		 *  Set parallel mode to METHODS level
-		 *  Each method will be taken care of by 1 thread
-		 */
-		suite.setThreadCount(Integer.parseInt(context.getProperty("THREAD_COUNT")));
-		suite.setDataProviderThreadCount(Integer.parseInt(context.getProperty("DATAPROVIDER_THREAD_COUNT")));
-		suite.setParallel(ParallelMode.METHODS);
-		suite.setVerbose(2);
+        // Add listeners
+        ArrayList<String> listeners = new ArrayList<>();
+        listeners.add(com.rayzhouzhj.framework.testng.listeners.InvokedMethodListener.class.getName());
+        listeners.add(com.rayzhouzhj.framework.testng.listeners.RetryListener.class.getName());
+        suite.setListeners(listeners);
 
-		// Add listeners
-		ArrayList<String> listeners = new ArrayList<>();
-		listeners.add(com.rayzhouzhj.framework.testng.listeners.InvokedMethodListener.class.getName());
-		listeners.add(com.rayzhouzhj.framework.testng.listeners.RetryListener.class.getName());
-		suite.setListeners(listeners);
+        // Initialize the XML Test Suite
+        XmlTest test = new XmlTest(suite);
+        test.setName("API Test");
+        test.setIncludedGroups(groupsInclude);
+        test.setExcludedGroups(groupsExclude);
 
-		// Initialize the XML Test Suite
-		XmlTest test = new XmlTest(suite);
-		test.setName("API Test");
-		test.setIncludedGroups(groupsInclude);
-		test.setExcludedGroups(groupsExclude);
+        // Add test class and methods
+        List<XmlClass> xmlClasses = new ArrayList<>();
+        for (String className : classMethodMap.keySet()) {
+            XmlClass clazz = new XmlClass();
+            clazz.setName(className);
 
-		// Add test class and methods
-		List<XmlClass> xmlClasses = new ArrayList<>();
-		for (String className : classMethodMap.keySet()) 
-		{
-			XmlClass clazz = new XmlClass();
-			clazz.setName(className);
+            // Add include methods
+            List<XmlInclude> includeMethods = new ArrayList<>();
+            for (Method method : classMethodMap.get(className)) {
+                XmlInclude includeMethod = new XmlInclude(method.getName());
+                includeMethods.add(includeMethod);
+            }
 
-			// Add include methods
-			List<XmlInclude> includeMethods = new ArrayList<>();
-			for(Method method : classMethodMap.get(className))
-			{
-				XmlInclude includeMethod = new XmlInclude(method.getName());
-				includeMethods.add(includeMethod);
-			}
+            clazz.setIncludedMethods(includeMethods);
+            xmlClasses.add(clazz);
+        }
 
-			clazz.setIncludedMethods(includeMethods);
-			xmlClasses.add(clazz);
-		}
+        test.setXmlClasses(xmlClasses);
 
-		test.setXmlClasses(xmlClasses);
+        return suite;
+    }
 
-		return suite;
-	}
+    private String writeTestNGFile(XmlSuite suite, String fileName) {
+        // Print out Suite XML
+        System.out.println(suite.toXml());
+        String suiteXML = System.getProperty("user.dir") + "/target/" + fileName + ".xml";
 
-	private String writeTestNGFile(XmlSuite suite, String fileName)
-	{
-		// Print out Suite XML
-		System.out.println(suite.toXml());
-		String suiteXML = System.getProperty("user.dir") + "/target/" + fileName + ".xml";
+        try {
+            FileWriter writer = new FileWriter(new File(suiteXML));
+            writer.write(suite.toXml());
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-		try 
-		{
-			FileWriter writer = new FileWriter(new File(suiteXML));
-			writer.write(suite.toXml());
-			writer.flush();
-			writer.close();
-		} 
-		catch (IOException e) 
-		{
-			e.printStackTrace();
-		}
+        return suiteXML;
+    }
 
-		return suiteXML;
-	}
+    private Map<String, List<Method>> createTestsMap(Set<Method> methods) {
+        StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
+        final String runnerClass = stElements[3].getClassName();
+        System.out.println("TestExecutor: Runner Class => " + runnerClass);
+        Map<String, List<Method>> testsMap = new HashMap<>();
+        methods.stream().forEach(method ->
+        {
+            String className = method.getDeclaringClass().getPackage().getName() + "." + method.getDeclaringClass().getSimpleName();
 
-	private Map<String, List<Method>> createTestsMap(Set<Method> methods) 
-	{
-		StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
-		final String runnerClass = stElements[3].getClassName();
-		System.out.println("TestExecutor: Runner Class => " + runnerClass);
-		Map<String, List<Method>> testsMap = new HashMap<>();
-		methods.stream().forEach(method -> 
-		{
-			String className = method.getDeclaringClass().getPackage().getName() + "." + method.getDeclaringClass().getSimpleName();
+            // Skip runner class
+            if (runnerClass.equals(className)) {
+                return;
+            }
 
-			// Skip runner class
-			if(runnerClass.equals(className))
-			{
-				return;
-			}
+            // Get method list from specific test class
+            List<Method> methodsList = testsMap.get(className);
 
-			// Get method list from specific test class
-			List<Method> methodsList = testsMap.get(className);
+            // If the method list is empty, initialize it and add it to test class map
+            if (methodsList == null) {
+                methodsList = new ArrayList<>();
+                testsMap.put(className, methodsList);
+            }
 
-			// If the method list is empty, initialize it and add it to test class map
-			if (methodsList == null)
-			{
-				methodsList = new ArrayList<>();
-				testsMap.put(className, methodsList);
-			}
+            // If current method is duplicated
+            if (methodsList.contains(method)) {
+                return;
+            }
 
-			// If current method is duplicated
-			if(methodsList.contains(method))
-			{
-				return;
-			}
+            // Skip the method with the exclude groups
+            // Added this filter because TestNG sometimes does not filter the exclude correctly
+            if (method.isAnnotationPresent(Test.class)) {
+                boolean isIncluded = false;
+                Test test = method.getAnnotation(Test.class);
+                String[] groups = test.groups();
+                for (String group : groups) {
+                    if (this.groupsExclude.contains(group)) {
+                        // If no test method is included for the test class
+                        if (methodsList.isEmpty()) {
+                            // Remove test class from test map
+                            testsMap.remove(className);
+                        }
 
-			// Skip the method with the exclude groups
-			// Added this filter because TestNG sometimes does not filter the exclude correctly
-			if (method.isAnnotationPresent(Test.class))
-			{
-				boolean isIncluded = false;
-				Test test = method.getAnnotation(Test.class);
-				String[] groups = test.groups();
-				for(String group : groups)
-				{
-					if(this.groupsExclude.contains(group))
-					{
-						// If no test method is included for the test class
-						if(methodsList.isEmpty())
-						{
-							// Remove test class from test map
-							testsMap.remove(className);
-						}
+                        return;
+                    }
 
-						return;
-					}
+                    // If include groups are not specified or current test group is in the include groups
+                    if (this.groupsInclude.size() == 0 || this.groupsInclude.contains(group)) {
+                        isIncluded = true;
+                    }
+                }
 
-					// If include groups are not specified or current test group is in the include groups
-					if(this.groupsInclude.size() == 0 || this.groupsInclude.contains(group))
-					{
-						isIncluded = true;
-					}
-				}
+                // Add method to list
+                if (isIncluded) {
+                    methodsList.add(method);
+                } else {
+                    // If no test method is included for the test class
+                    if (methodsList.isEmpty()) {
+                        // Remove test class from test map
+                        testsMap.remove(className);
+                    }
+                }
+            }
+        });
 
-				// Add method to list
-				if(isIncluded)
-				{
-					methodsList.add(method);
-				}
-				else
-				{
-					// If no test method is included for the test class
-					if(methodsList.isEmpty())
-					{
-						// Remove test class from test map
-						testsMap.remove(className);
-					}
-				}
-			}
-		});
-
-		return testsMap;
-	}
+        return testsMap;
+    }
 
 }
 
-class TestExecutorService implements Callable<Boolean>
-{
-	private String suite;
+class TestExecutorService implements Callable<Boolean> {
+    private String suite;
 
-	public TestExecutorService(String file) 
-	{
-		suite = file;
-	}
+    public TestExecutorService(String file) {
+        suite = file;
+    }
 
-	@Override
-	public Boolean call() throws Exception
-	{
-		List<String> suiteFiles = new ArrayList<>();
-		suiteFiles.add(suite);
+    @Override
+    public Boolean call() throws Exception {
+        List<String> suiteFiles = new ArrayList<>();
+        suiteFiles.add(suite);
 
-		TestNG testNG = new TestNG();
-		testNG.setTestSuites(suiteFiles);
-		testNG.run();
+        TestNG testNG = new TestNG();
+        testNG.setTestSuites(suiteFiles);
+        testNG.run();
 
-		return testNG.hasFailure();
-	}
+        return testNG.hasFailure();
+    }
 
 }

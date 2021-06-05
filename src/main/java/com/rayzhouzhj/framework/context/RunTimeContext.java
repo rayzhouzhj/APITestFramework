@@ -8,93 +8,79 @@ import java.util.HashMap;
 
 import com.rayzhouzhj.framework.utils.ConfigFileReader;
 
-public class RunTimeContext 
-{
-	private static RunTimeContext instance;
-	private ThreadLocal<HashMap<String, Object>> testLevelVariables = new ThreadLocal<>();
+public class RunTimeContext {
+    private static RunTimeContext instance;
+    private ThreadLocal<HashMap<String, Object>> testLevelVariables = new ThreadLocal<>();
 
-	private RunTimeContext()
-	{
-		
-	} 
-	
-	public static synchronized RunTimeContext getInstance() 
-	{
-		if (instance == null) 
-		{
-			instance = new RunTimeContext();
-		}
-		
-		return instance;
-	}
-	
-	public boolean isParallelExecution()
-	{
-		return "parallel".equalsIgnoreCase(this.getProperty("RUNNER", "").trim());
-	}
-	
-	public String getProperty(String name) 
-	{
-		return this.getProperty(name, null);
-	}
+    private RunTimeContext() {
 
-	public String getProperty(String key, String defaultValue) 
-	{
-		String value = System.getenv(key);
-		if(value == null || value.isEmpty())
-		{
-			value = ConfigFileReader.getInstance().getProperty(key, defaultValue);
-		}
-		
-		return value;
-	}
-	
-	public synchronized String getLogPath(String category, String className, String methodName)
-	{
-		String path = System.getProperty("user.dir") 
-		+ File.separator + "target"
-		+ File.separator + category 
-		+ File.separator + className 
-		+ File.separator + methodName;
-		
-		File file = new File(path);
-		if (!file.exists()) 
-		{
-			if (file.mkdirs()) 
-			{
-				System.out.println("Directory [" + path + "] is created!");
-			} 
-			else
-			{
-				System.out.println("Failed to create directory!");
-			}
-		}
-		
-		return path;
-	}
-	
-    public static String currentDateAndTime()
-    {
+    }
+
+    public static synchronized RunTimeContext getInstance() {
+        if (instance == null) {
+            instance = new RunTimeContext();
+        }
+
+        return instance;
+    }
+
+    public boolean isParallelExecution() {
+        return "parallel".equalsIgnoreCase(this.getProperty("RUNNER", "").trim());
+    }
+
+    public String getProperty(String name) {
+        return this.getProperty(name, null);
+    }
+
+    public String getProperty(String key, String defaultValue) {
+        String value = System.getenv(key);
+        if (value == null || value.isEmpty()) {
+            value = ConfigFileReader.getInstance().getProperty(key, defaultValue);
+        }
+
+        return value;
+    }
+
+    public synchronized String getLogPath(String category, String className, String methodName) {
+        String path = System.getProperty("user.dir")
+                + File.separator + "target"
+                + File.separator + category
+                + File.separator + className
+                + File.separator + methodName;
+
+        File file = new File(path);
+        if (!file.exists()) {
+            if (file.mkdirs()) {
+                System.out.println("Directory [" + path + "] is created!");
+            } else {
+                System.out.println("Failed to create directory!");
+            }
+        }
+
+        return path;
+    }
+
+    public static String currentDateAndTime() {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
         return now.truncatedTo(ChronoUnit.SECONDS).format(dtf).replace(":", "-");
     }
 
-	public Object getTestLevelVariables(String name) {
-		return this.testLevelVariables.get().getOrDefault(name, null);
-	}
+    public Object getTestLevelVariables(String name) {
+        return this.testLevelVariables.get().getOrDefault(name, null);
+    }
 
-	public void setTestLevelVariables(String name, Object data) {
-		if (this.testLevelVariables.get() == null) {
-			this.testLevelVariables.set(new HashMap<>());
-		}
+    public void setTestLevelVariables(String name, Object data) {
+        if (this.testLevelVariables.get() == null) {
+            this.testLevelVariables.set(new HashMap<>());
+        }
 
-		this.testLevelVariables.get().put(name, data);
-	}
+        this.testLevelVariables.get().put(name, data);
+    }
 
-	public void clearRunTimeVariables() {
-		if (this.testLevelVariables.get() != null) {
-			this.testLevelVariables.get().clear();
-		}
-	}
+    public void clearRunTimeVariables() {
+        if (this.testLevelVariables.get() != null) {
+            this.testLevelVariables.get().clear();
+        }
+    }
 }
