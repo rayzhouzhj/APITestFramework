@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+import com.rayzhouzhj.framework.utils.ConfigFileKeys;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
@@ -54,12 +55,12 @@ public class TestExecutor {
     }
 
     private void initGroups() {
-        if (context.getProperty("INCLUDE_GROUPS") != null) {
-            Collections.addAll(groupsInclude, context.getProperty("INCLUDE_GROUPS").split("\\s*,\\s*"));
+        if (context.getProperty(ConfigFileKeys.INCLUDE_GROUPS) != null) {
+            Collections.addAll(groupsInclude, context.getProperty(ConfigFileKeys.INCLUDE_GROUPS).split("\\s*,\\s*"));
         }
 
-        if (context.getProperty("EXCLUDE_GROUPS") != null) {
-            Collections.addAll(groupsExclude, context.getProperty("EXCLUDE_GROUPS").split("\\s*,\\s*"));
+        if (context.getProperty(ConfigFileKeys.EXCLUDE_GROUPS) != null) {
+            Collections.addAll(groupsExclude, context.getProperty(ConfigFileKeys.EXCLUDE_GROUPS).split("\\s*,\\s*"));
         }
     }
 
@@ -135,8 +136,8 @@ public class TestExecutor {
          *  Set parallel mode to METHODS level
          *  Each method will be taken care of by 1 thread
          */
-        suite.setThreadCount(Integer.parseInt(context.getProperty("THREAD_COUNT")));
-        suite.setDataProviderThreadCount(Integer.parseInt(context.getProperty("DATAPROVIDER_THREAD_COUNT")));
+        suite.setThreadCount(Integer.parseInt(context.getProperty(ConfigFileKeys.THREAD_COUNT)));
+        suite.setDataProviderThreadCount(Integer.parseInt(context.getProperty(ConfigFileKeys.DATAPROVIDER_THREAD_COUNT)));
         suite.setParallel(ParallelMode.METHODS);
         suite.setVerbose(2);
 
@@ -180,7 +181,7 @@ public class TestExecutor {
         String suiteXML = System.getProperty("user.dir") + "/target/" + fileName + ".xml";
 
         try {
-            FileWriter writer = new FileWriter(new File(suiteXML));
+            FileWriter writer = new FileWriter(suiteXML);
             writer.write(suite.toXml());
             writer.flush();
             writer.close();

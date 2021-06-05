@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 
 import com.rayzhouzhj.framework.testng.listeners.InvokedMethodListener;
+import com.rayzhouzhj.framework.utils.ConfigFileKeys;
 import com.rayzhouzhj.framework.utils.ConfigFileReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,5 +87,13 @@ public class RunTimeContext {
         if (this.testLevelVariables.get() != null) {
             this.testLevelVariables.get().clear();
         }
+    }
+
+    public String getBaseUrl() {
+        String baseUrl = this.getProperty(ConfigFileKeys.BASE_URL, "");
+        if(baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        return baseUrl;
     }
 }

@@ -22,7 +22,7 @@ public class APITest1 {
                 .when()
                 .get("https://api.github.com/users/rayzhouzhj");
 
-        logger.logJson(resp, "json response");
+        logger.logJson(resp.prettyPrint(), "json response");
 
         resp.then()
                 .statusCode(200)
@@ -38,7 +38,7 @@ public class APITest1 {
                 .when()
                 .get("https://api.github.com/users/rayzhouzhj");
 
-        logger.logJson(resp, "json response");
+        logger.logJson(resp.prettyPrint(), "json response");
 
         resp.then()
                 .statusCode(200)

@@ -15,11 +15,11 @@ import io.restassured.response.Response;
 
 public class TestLogger {
     private static final Logger frameworkLogger = LoggerFactory.getLogger(TestLogger.class);
-    public void logJson(Response resp) {
-        logJson(resp, null);
+    public void logJson(String json) {
+        logJson(json, null);
     }
 
-    public void logJson(Response resp, String fileName) {
+    public void logJson(String json, String fileName) {
         StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
         int classIndex = 0;
         for (int i = 0; i < stElements.length; i++) {
@@ -37,8 +37,8 @@ public class TestLogger {
 
         FileWriter fw;
         try {
-            fw = new FileWriter(new File(filePath));
-            fw.write(resp.prettyPrint());
+            fw = new FileWriter(filePath);
+            fw.write(json);
             fw.flush();
 
             ReportManager.getInstance().logInfo("<a target='_blank' href='" + filePath + "'> JSON Response </a>");
