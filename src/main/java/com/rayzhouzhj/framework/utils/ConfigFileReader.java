@@ -1,5 +1,9 @@
 package com.rayzhouzhj.framework.utils;
 
+import com.rayzhouzhj.framework.testng.listeners.RetryAnalyzer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -11,6 +15,7 @@ import java.util.Properties;
  * ConfigFileManager - Read config file statically into configFileMap
  */
 public class ConfigFileReader {
+    private static final Logger frameworkLogger = LoggerFactory.getLogger(ConfigFileReader.class);
     private static Map<String, String> configFileMap = new HashMap<>();
     private static Properties prop = new Properties();
     private static ConfigFileReader instance;
@@ -26,7 +31,7 @@ public class ConfigFileReader {
             try {
                 if (System.getenv().containsKey("CONFIG_FILE")) {
                     configFile = System.getenv().get("CONFIG_FILE");
-                    System.out.println("Using config file from " + configFile);
+                    frameworkLogger.info("Using config file from " + configFile);
                 }
 
                 instance = new ConfigFileReader(configFile);

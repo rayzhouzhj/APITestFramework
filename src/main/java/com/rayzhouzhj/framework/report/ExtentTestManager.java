@@ -18,10 +18,8 @@ public class ExtentTestManager {
         String testNodeName = name;
 
         if (extentReportMap.containsKey(testNodeName)) {
-            System.out.println("Reuse Test Thread ID: " + Thread.currentThread().getId() + ", Key: " + name);
             test = extentReportMap.get(testNodeName);
         } else {
-            System.out.println("Create new Test Thread ID: " + Thread.currentThread().getId() + ", Key: " + name);
             test = extent.createTest(name, description);
             extentReportMap.put(testNodeName, test);
         }

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 
 import com.rayzhouzhj.framework.context.RunTimeContext;
@@ -12,6 +14,7 @@ import com.rayzhouzhj.framework.report.ReportManager;
 import io.restassured.response.Response;
 
 public class TestLogger {
+    private static final Logger frameworkLogger = LoggerFactory.getLogger(TestLogger.class);
     public void logJson(Response resp) {
         logJson(resp, null);
     }
@@ -45,22 +48,22 @@ public class TestLogger {
     }
 
     public void logInfo(String message) {
-        System.out.println("[INFO] " + message);
+        frameworkLogger.info(message);
         ReportManager.getInstance().logInfo(message);
     }
 
     public void logPass(String message) {
-        System.out.println("[PASSED] " + message);
+        frameworkLogger.info(message);
         ReportManager.getInstance().logPass(message);
     }
 
     public void logFail(String message) {
-        System.err.println("[FAILED] " + message);
+        frameworkLogger.error(message);
         ReportManager.getInstance().logFail(message);
     }
 
     public void logFatalError(String message) {
-        System.err.println("[ERROR] " + message);
+        frameworkLogger.error(message);
         Assert.fail(message);
     }
 }

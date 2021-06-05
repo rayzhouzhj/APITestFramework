@@ -6,9 +6,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 
+import com.rayzhouzhj.framework.testng.listeners.InvokedMethodListener;
 import com.rayzhouzhj.framework.utils.ConfigFileReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RunTimeContext {
+    private static final Logger frameworkLogger = LoggerFactory.getLogger(RunTimeContext.class);
     private static RunTimeContext instance;
     private ThreadLocal<HashMap<String, Object>> testLevelVariables = new ThreadLocal<>();
 
@@ -51,9 +55,9 @@ public class RunTimeContext {
         File file = new File(path);
         if (!file.exists()) {
             if (file.mkdirs()) {
-                System.out.println("Directory [" + path + "] is created!");
+                frameworkLogger.info("Directory [" + path + "] is created!");
             } else {
-                System.out.println("Failed to create directory!");
+                frameworkLogger.info("Failed to create directory!");
             }
         }
 

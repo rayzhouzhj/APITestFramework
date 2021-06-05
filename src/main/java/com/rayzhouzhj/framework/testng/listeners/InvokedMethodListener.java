@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 
 import com.rayzhouzhj.framework.context.RunTimeContext;
 import com.rayzhouzhj.framework.testng.model.TestInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.IInvokedMethod;
 import org.testng.IInvokedMethodListener;
 import org.testng.ITestResult;
@@ -17,6 +19,7 @@ import com.rayzhouzhj.framework.report.ReportManager;
 import static com.rayzhouzhj.framework.utils.constants.TEST_INFO_OBJECT;
 
 public final class InvokedMethodListener implements IInvokedMethodListener {
+    private static final Logger frameworkLogger = LoggerFactory.getLogger(InvokedMethodListener.class);
     public InvokedMethodListener() throws Exception {
 
     }
@@ -59,7 +62,7 @@ public final class InvokedMethodListener implements IInvokedMethodListener {
             throw new SkipException("Skipped Test - " + testInfo.getTestName());
         }
 
-        System.out.println("[INFO] Start running test [" + testInfo.getMethodName() + "]");
+        frameworkLogger.info("Start running test [" + testInfo.getMethodName() + "]");
         resetReporter(method, testResult);
 
     }
@@ -80,7 +83,7 @@ public final class InvokedMethodListener implements IInvokedMethodListener {
         Method refMethod = method.getTestMethod().getConstructorOrMethod().getMethod();
         String methodName = refMethod.getName();
 
-        System.out.println("[INFO] Completed running test [" + methodName + "]");
+        frameworkLogger.info("Completed running test [" + methodName + "]");
 
         try {
             if (testResult.getStatus() == ITestResult.SUCCESS || testResult.getStatus() == ITestResult.FAILURE) {

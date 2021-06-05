@@ -3,6 +3,9 @@ package com.rayzhouzhj.framework.testng.listeners;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.rayzhouzhj.framework.test.utils.TestLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
 
@@ -10,6 +13,7 @@ import com.rayzhouzhj.framework.annotations.RetryCount;
 import com.rayzhouzhj.framework.context.RunTimeContext;
 
 public class RetryAnalyzer implements IRetryAnalyzer {
+    private static final Logger frameworkLogger = LoggerFactory.getLogger(RetryAnalyzer.class);
     private ConcurrentHashMap<String, RetryMethod> retryMap = new ConcurrentHashMap<>();
 
     public RetryAnalyzer() {
@@ -20,14 +24,14 @@ public class RetryAnalyzer implements IRetryAnalyzer {
         if (iTestResult.getStatus() == ITestResult.FAILURE) {
             RetryMethod method = getRetryMethod(iTestResult);
 
-            System.out.println("Test Failed - " + method.methodName);
+            frameworkLogger.info("Test Failed - " + method.methodName);
             if (method.needRetry()) {
                 method.increaseRetryCount();
-                System.out.println("Retrying Failed Test Cases " + method.retryCount + " out of " + method.maxRetryCount);
+                frameworkLogger.info("Retrying Failed Test Cases " + method.retryCount + " out of " + method.maxRetryCount);
 
                 return true;
             } else {
-                System.out.println("Meet maximum retry count [ " + method.maxRetryCount + " ]");
+                frameworkLogger.info("Meet maximum retry count [ " + method.maxRetryCount + " ]");
 
                 return false;
             }

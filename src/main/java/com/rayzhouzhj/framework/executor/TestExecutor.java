@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.TestNG;
 import org.testng.annotations.Test;
 import org.testng.xml.XmlClass;
@@ -33,6 +35,7 @@ import com.rayzhouzhj.framework.utils.Figlet;
 
 
 public class TestExecutor {
+    private static final Logger frameworkLogger = LoggerFactory.getLogger(TestExecutor.class);
     private final RunTimeContext context;
     private List<String> packages;
     private List<String> groupsInclude = new ArrayList<>();
@@ -191,7 +194,6 @@ public class TestExecutor {
     private Map<String, List<Method>> createTestsMap(Set<Method> methods) {
         StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
         final String runnerClass = stElements[3].getClassName();
-        System.out.println("TestExecutor: Runner Class => " + runnerClass);
         Map<String, List<Method>> testsMap = new HashMap<>();
         methods.stream().forEach(method ->
         {
