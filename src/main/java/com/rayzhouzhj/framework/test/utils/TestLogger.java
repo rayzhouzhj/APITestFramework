@@ -41,7 +41,7 @@ public class TestLogger {
             fw.write(json);
             fw.flush();
 
-            ReportManager.getInstance().logInfo("<a target='_blank' href='" + filePath + "'> JSON Response </a>");
+            ReportManager.getInstance().logInfo("<a target='_blank' href='" + filePath + "'> " + fileName + " </a>");
         } catch (IOException e) {
             e.printStackTrace();
         }
