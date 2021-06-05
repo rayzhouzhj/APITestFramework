@@ -15,7 +15,7 @@ public class APITest1
 
 	TestLogger logger = new TestLogger();
 	
-	@Test(groups={"test", "groups_to_exclude"})
+	@Test(groups={"test1", "groups_to_exclude"})
 	@Categories(values="API")
 	public void testAPI1() throws InterruptedException
 	{
@@ -27,10 +27,11 @@ public class APITest1
 				.get("https://api.github.com/users/rayzhouzhj");
 		
 		logger.logJson(resp, "json response");
-		
+
 		resp.then()
 		.statusCode(200)
-        .body("name", equalTo("Ray Zhou"));
+        .body("$", hasKey("company"))
+				.body("name", isA(String.class));
 	}
 	
 	@Test(groups={"test"})

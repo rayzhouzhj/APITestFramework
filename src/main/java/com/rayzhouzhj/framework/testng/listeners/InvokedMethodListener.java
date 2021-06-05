@@ -2,14 +2,19 @@ package com.rayzhouzhj.framework.testng.listeners;
 
 import java.lang.reflect.Method;
 
+import com.rayzhouzhj.framework.context.RunTimeContext;
+import com.rayzhouzhj.framework.testng.model.TestInfo;
 import org.testng.IInvokedMethod;
 import org.testng.IInvokedMethodListener;
 import org.testng.ITestResult;
+import org.testng.SkipException;
 import org.testng.annotations.Test;
 
 import com.rayzhouzhj.framework.annotations.ClassDescription;
 import com.rayzhouzhj.framework.report.ExtentManager;
 import com.rayzhouzhj.framework.report.ReportManager;
+
+import static com.rayzhouzhj.framework.utils.constants.TEST_INFO_OBJECT;
 
 public final class InvokedMethodListener implements IInvokedMethodListener
 {
@@ -49,16 +54,20 @@ public final class InvokedMethodListener implements IInvokedMethodListener
 	@Override
 	public void beforeInvocation(IInvokedMethod method, ITestResult testResult) 
 	{
-		Method refMethod = method.getTestMethod().getConstructorOrMethod().getMethod();
-		String methodName = refMethod.getName();
+		// Clear all runtime variables
+		RunTimeContext.getInstance().clearRunTimeVariables();
 
-		// Skip beforeInvocation if current method is not with Annotation Test
-		if(refMethod.getAnnotation(Test.class) == null)
-		{
-			return;
+		TestInfo testInfo = new TestInfo(method, testResult);
+		// Save TestInfo to runtime memory
+		RunTimeContext.getInstance().setTestLevelVariables(TEST_INFO_OBJECT, testInfo);
+
+		// Skip beforeInvocation if current method is not with Annotation Test, or
+		// Current Test need to be skipped
+		if (!testInfo.isTestMethod()) {
+			throw new SkipException("Skipped Test - " + testInfo.getTestName());
 		}
 
-		System.out.println("[INFO] Start running test [" + methodName + "]");
+		System.out.println("[INFO] Start running test [" + testInfo.getMethodName() + "]");
 		resetReporter(method, testResult);
 		
 	}
@@ -70,16 +79,17 @@ public final class InvokedMethodListener implements IInvokedMethodListener
 	@Override
 	public void afterInvocation(IInvokedMethod method, ITestResult testResult) 
 	{
+		TestInfo testInfo = (TestInfo) RunTimeContext.getInstance().getTestLevelVariables(TEST_INFO_OBJECT);
+		// Skip beforeInvocation if current method is not with Annotation Test, or
+		// Current Test need to be skipped
+		if (!testInfo.isTestMethod()) {
+			return;
+		}
+
 		Method refMethod = method.getTestMethod().getConstructorOrMethod().getMethod();
 		String methodName = refMethod.getName();
 
 		System.out.println("[INFO] Completed running test [" + methodName + "]");
-
-		// Skip afterInvocation if current method is not with Annotation Test
-		if(refMethod.getAnnotation(Test.class) == null)
-		{
-			return;
-		}
 
 		try 
 		{

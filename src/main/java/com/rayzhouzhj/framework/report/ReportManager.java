@@ -6,13 +6,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.rayzhouzhj.framework.testng.model.TestInfo;
 import org.testng.IInvokedMethod;
 import org.testng.ITestResult;
 import org.testng.annotations.Test;
 
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
-import com.rayzhouzhj.framework.annotations.Author;
+import com.rayzhouzhj.framework.annotations.Authors;
 import com.rayzhouzhj.framework.annotations.Categories;
 
 /**
@@ -24,7 +25,7 @@ public class ReportManager
 	public ThreadLocal<ExtentTest> parentTestClass = new ThreadLocal<>();
 	public ThreadLocal<ExtentTest> currentTestMethod = new ThreadLocal<>();
 	public ThreadLocal<ITestResult> testResult = new ThreadLocal<>();
-
+	private ThreadLocal<TestInfo> testInfo = new ThreadLocal<>();
 	private ConcurrentHashMap<String, Boolean> retryMap = new ConcurrentHashMap<>();
 
 	public static ReportManager getInstance()
@@ -138,11 +139,9 @@ public class ReportManager
 
 		
 		ExtentTest child = null;
-		if (testMethod.isAnnotationPresent(Author.class))
+		if (testMethod.isAnnotationPresent(Authors.class))
 		{
-			String authorName = testMethod.getAnnotation(Author.class).name();
-			ArrayList<String> authors = new ArrayList<>();
-			Collections.addAll(authors, authorName.split("\\s*,\\s*"));
+			String[] authors = testMethod.getAnnotation(Authors.class).name();
 			child = parentTestClass.get().createNode(testName, testDescription).assignAuthor(String.valueOf(authors));
 		} 
 		else 
@@ -151,15 +150,7 @@ public class ReportManager
 		}
 
 		// Assign Categories
-		if(testMethod.isAnnotationPresent(Categories.class))
-		{
-			String[] categories = testMethod.getAnnotation(Categories.class).values();
-			if(categories.length > 0)
-			{
-				child.assignCategory(categories);
-			}
-
-		}
+		child.assignCategory(invokedMethod.getTestMethod().getGroups());
 
 		currentTestMethod.set(child);
 	}

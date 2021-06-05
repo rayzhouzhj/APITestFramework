@@ -4,13 +4,15 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 
 import com.rayzhouzhj.framework.utils.ConfigFileReader;
 
 public class RunTimeContext 
 {
 	private static RunTimeContext instance;
-	
+	private ThreadLocal<HashMap<String, Object>> testLevelVariables = new ThreadLocal<>();
+
 	private RunTimeContext()
 	{
 		
@@ -77,4 +79,22 @@ public class RunTimeContext
         DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
         return now.truncatedTo(ChronoUnit.SECONDS).format(dtf).replace(":", "-");
     }
+
+	public Object getTestLevelVariables(String name) {
+		return this.testLevelVariables.get().getOrDefault(name, null);
+	}
+
+	public void setTestLevelVariables(String name, Object data) {
+		if (this.testLevelVariables.get() == null) {
+			this.testLevelVariables.set(new HashMap<>());
+		}
+
+		this.testLevelVariables.get().put(name, data);
+	}
+
+	public void clearRunTimeVariables() {
+		if (this.testLevelVariables.get() != null) {
+			this.testLevelVariables.get().clear();
+		}
+	}
 }

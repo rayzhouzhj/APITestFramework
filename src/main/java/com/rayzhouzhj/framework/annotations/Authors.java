@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE, ElementType.METHOD}) 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Author 
+public @interface Authors
 {
-    String name() default "";
+    String[] name() default {};
 }

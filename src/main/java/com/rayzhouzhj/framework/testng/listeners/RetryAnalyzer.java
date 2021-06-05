@@ -9,11 +9,11 @@ import org.testng.ITestResult;
 import com.rayzhouzhj.framework.annotations.RetryCount;
 import com.rayzhouzhj.framework.context.RunTimeContext;
 
-public class Retry implements IRetryAnalyzer 
+public class RetryAnalyzer implements IRetryAnalyzer
 {
 	private ConcurrentHashMap<String, RetryMethod> retryMap = new ConcurrentHashMap<>();
 
-	public Retry() 
+	public RetryAnalyzer()
 	{
 	}
 
