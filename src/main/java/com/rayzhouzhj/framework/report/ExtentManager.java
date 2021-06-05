@@ -17,7 +17,6 @@ import com.rayzhouzhj.framework.context.RunTimeContext;
 public class ExtentManager {
     private static ExtentReports extent;
     private static String filePath = System.getProperty("user.dir") + File.separator + "target" + File.separator + "APITestReport.html";
-    private static String extentXML = System.getProperty("user.dir") + File.separator + "extent.xml";
 
     public synchronized static ExtentReports getExtent() {
         if (extent == null) {
@@ -51,7 +50,6 @@ public class ExtentManager {
 
     private static ExtentHtmlReporter getHtmlReporter() {
         ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(filePath);
-        htmlReporter.loadXMLConfig(extentXML);
         // make the charts visible on report open
         htmlReporter.config().setChartVisibilityOnOpen(true);
 
