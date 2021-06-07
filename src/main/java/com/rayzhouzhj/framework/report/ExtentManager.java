@@ -14,87 +14,78 @@ import com.aventstack.extentreports.reporter.configuration.ChartLocation;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 import com.rayzhouzhj.framework.context.RunTimeContext;
 
-public class ExtentManager 
-{
-	private static ExtentReports extent;
-	private static String filePath = System.getProperty("user.dir") + File.separator + "target" + File.separator + "APITestReport.html";
-	private static String extentXML = System.getProperty("user.dir") + File.separator + "extent.xml";
+public class ExtentManager {
+    private static ExtentReports extent;
+    private static String filePath = System.getProperty("user.dir") + File.separator + "target" + File.separator + "APITestReport.html";
 
-	public synchronized static ExtentReports getExtent() 
-	{
-		if (extent == null)
-		{
-			extent = new ExtentReports();
-			extent.attachReporter(getHtmlReporter());
-			if (System.getenv("ExtentX") != null && System.getenv("ExtentX").equalsIgnoreCase("true")) 
-			{
-				extent.attachReporter(getExtentXReporter());
-			}
+    public synchronized static ExtentReports getExtent() {
+        if (extent == null) {
+            extent = new ExtentReports();
+            extent.attachReporter(getHtmlReporter());
+            if (System.getenv("ExtentX") != null && System.getenv("ExtentX").equalsIgnoreCase("true")) {
+                extent.attachReporter(getExtentXReporter());
+            }
 
-			String build = RunTimeContext.getInstance().getProperty("BuildNumber");
-			if(build == null) build = "";
-			
-			extent.setSystemInfo("Build", build);
+            String build = RunTimeContext.getInstance().getProperty("BuildNumber");
+            if (build == null) build = "";
 
-			List<Status> statusHierarchy = Arrays.asList(
-					Status.FATAL,
-					Status.FAIL,
-					Status.ERROR,
-					Status.WARNING,
-					Status.PASS,
-					Status.SKIP,
-					Status.DEBUG,
-					Status.INFO
-					);
+            extent.setSystemInfo("Build", build);
 
-			extent.config().statusConfigurator().setStatusHierarchy(statusHierarchy);
-		}
+            List<Status> statusHierarchy = Arrays.asList(
+                    Status.FATAL,
+                    Status.FAIL,
+                    Status.ERROR,
+                    Status.WARNING,
+                    Status.PASS,
+                    Status.SKIP,
+                    Status.DEBUG,
+                    Status.INFO
+            );
 
-		return extent;
-	}
+            extent.config().statusConfigurator().setStatusHierarchy(statusHierarchy);
+        }
 
-	private static ExtentHtmlReporter getHtmlReporter()
-	{
-		ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(filePath);
-		htmlReporter.loadXMLConfig(extentXML);
-		// make the charts visible on report open
-		htmlReporter.config().setChartVisibilityOnOpen(true);
+        return extent;
+    }
 
-		// report title
-		htmlReporter.config().setDocumentTitle("API Test Report");
-		htmlReporter.config().setReportName("API Test Report");
-		htmlReporter.config().setTestViewChartLocation(ChartLocation.TOP);
-		htmlReporter.config().setTheme(Theme.STANDARD);
+    private static ExtentHtmlReporter getHtmlReporter() {
+        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(filePath);
+        // make the charts visible on report open
+        htmlReporter.config().setChartVisibilityOnOpen(true);
 
-		return htmlReporter;
-	}
+        // report title
+        htmlReporter.config().setDocumentTitle("API Test Report");
+        htmlReporter.config().setReportName("API Test Report");
+        htmlReporter.config().setTestViewChartLocation(ChartLocation.TOP);
+        htmlReporter.config().setTheme(Theme.STANDARD);
 
-	private static ExtentXReporter getExtentXReporter() 
-	{
-		String host = RunTimeContext.getInstance().getProperty("MONGODB_SERVER");
-		Integer port = Integer.parseInt(RunTimeContext.getInstance().getProperty("MONGODB_PORT"));
-		ExtentXReporter extentx = new ExtentXReporter(host, port);
+        return htmlReporter;
+    }
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+    private static ExtentXReporter getExtentXReporter() {
+        String host = RunTimeContext.getInstance().getProperty("MONGODB_SERVER");
+        Integer port = Integer.parseInt(RunTimeContext.getInstance().getProperty("MONGODB_PORT"));
+        ExtentXReporter extentx = new ExtentXReporter(host, port);
 
-		String product = RunTimeContext.getInstance().getProperty("Product");
-		String buildNum = RunTimeContext.getInstance().getProperty("BuildNumber");
-		String projectName = (product == null)? "API_Test" : product;
-		String reportName = (buildNum == null)? formatter.format(LocalDateTime.now()) : buildNum;
-		
-		// project name
-		extentx.config().setProjectName(projectName);
-		// report or build name
-		extentx.config().setReportName(reportName);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
-		// server URL
-		// ! must provide this to be able to upload snapshots
-		String url = host + ":" + port;
-		if (!url.isEmpty()) 
-		{
-			extentx.config().setServerUrl(url);
-		}
+        String product = RunTimeContext.getInstance().getProperty("Product");
+        String buildNum = RunTimeContext.getInstance().getProperty("BuildNumber");
+        String projectName = (product == null) ? "API_Test" : product;
+        String reportName = (buildNum == null) ? formatter.format(LocalDateTime.now()) : buildNum;
 
-		return extentx;
-	}
+        // project name
+        extentx.config().setProjectName(projectName);
+        // report or build name
+        extentx.config().setReportName(reportName);
+
+        // server URL
+        // ! must provide this to be able to upload snapshots
+        String url = host + ":" + port;
+        if (!url.isEmpty()) {
+            extentx.config().setServerUrl(url);
+        }
+
+        return extentx;
+    }
 }
